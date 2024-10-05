@@ -2,17 +2,14 @@
     "author": "Alexandre Blondeau",
     "description": "⚙️ A Webpack Loader for Aseprite files.",
     "engines": {
-
         "node": "16.13.0",
         "npm": "8.1.0"
     },
     "files": [
-
         "sources/"
     ],
     "homepage": "https://github.com/theatrejs/loader-aseprite",
     "keywords": [
-
         "2d",
         "aseprite",
         "canvas",
@@ -35,15 +32,13 @@
     "main": "./sources/index.js",
     "name": "@theatrejs/loader-aseprite",
     "peerDependencies": {
-
         "@theatrejs/plugin-aseprite": ">= 1.0.0",
         "webpack": ">= 5.94.0"
     },
     "repository": {
-
         "type": "git",
         "url": "git+https://github.com/theatrejs/loader-aseprite.git"
     },
     "type": "commonjs",
-    "version": "0.0.0"
+    "version": "1.0.0"
 }
