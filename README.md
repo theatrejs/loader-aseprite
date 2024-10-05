@@ -77,5 +77,3 @@ class Hero extends FACTORIES.ActorWithPreloadables([PLUGINASEPRITE.FACTORIES.Pre
     }
 }
 ```
-
-## [API](https://theatrejs.github.io/loader-aseprite/index.html)
