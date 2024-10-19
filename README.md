@@ -45,16 +45,20 @@ npm install @theatrejs/loader-aseprite --save-dev
 > *⚠️ This example does not include the preloading of assets.*
 
 ```javascript
-import {Actor} from '@theatrejs/theatrejs';
+import {Stage} from '@theatrejs/theatrejs';
+import * as PLUGINASEPRITE from '@theatrejs/plugin-aseprite';
 
-import spritesheetHero from './hero-16x16.aseprite';
+import asepriteHero from './hero-16x16.aseprite';
 
-class Hero extends Actor {
+class Level1 extends Stage {
     onCreate() {
-        this.$timeline = spritesheetHero.createTimeline({$actor: this, $framerate: 8, $loop: true, $tag: 'idle'});
-    }
-    onTick($timetick) {
-        this.$timeline.tick($timetick);
+        this.createActor(
+            PLUGINASEPRITE.FACTORIES.ActorWithSpritesheet({
+                $aseprite: asepriteHero,
+                $loop: true,
+                $tag: 'idle'
+            })
+        );
     }
 }
 ```
@@ -63,17 +67,19 @@ class Hero extends Actor {
 
 ```javascript
 import {FACTORIES} from '@theatrejs/theatrejs';
-
 import * as PLUGINASEPRITE from '@theatrejs/plugin-aseprite';
 
-import spritesheetHero from './hero-16x16.aseprite';
+import asepriteHero from './hero-16x16.aseprite';
 
-class Hero extends FACTORIES.ActorWithPreloadables([PLUGINASEPRITE.FACTORIES.PreloadableAseprite(spritesheetHero)]) {
+class Level1 extends FACTORIES.StageWithPreloadables([PLUGINASEPRITE.FACTORIES.PreloadableAseprite(asepriteHero)]) {
     onCreate() {
-        this.$timeline = spritesheetHero.createTimeline({$actor: this, $framerate: 8, $loop: true, $tag: 'idle'});
-    }
-    onTick($timetick) {
-        this.$timeline.tick($timetick);
+        this.createActor(
+            PLUGINASEPRITE.FACTORIES.ActorWithSpritesheet({
+                $aseprite: asepriteHero,
+                $loop: true,
+                $tag: 'idle'
+            })
+        );
     }
 }
 ```
