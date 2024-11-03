@@ -6,7 +6,7 @@
 
 ## Installation
 
-#### `dependencies`
+> *⚠️ This loader needs you to have [**Aseprite**](https://www.aseprite.org) installed.*
 
 ```shell
 npm install @theatrejs/plugin-aseprite --save
@@ -16,7 +16,7 @@ npm install @theatrejs/plugin-aseprite --save
 npm install @theatrejs/loader-aseprite --save-dev
 ```
 
-#### `webpack configuration`
+## Webpack Configuration
 
 ```javascript
 {
@@ -29,7 +29,43 @@ npm install @theatrejs/loader-aseprite --save-dev
                     {
                         'loader': '@theatrejs/loader-aseprite',
                         'options': {
-                            'aseprite': <path-to-aseprite-executable>
+                            'aseprite': '<path-to-aseprite>' // The path to the Aseprite executable.
+                        }
+                    }
+                ]
+            }
+            ...
+        ]
+    }
+}
+```
+
+## Webpack Configuration (Advanced Options)
+
+```javascript
+{
+    'module': {
+        'rules': [
+            ...
+            {
+                'test': /\.aseprite$/,
+                'use': [
+                    {
+                        'loader': '@theatrejs/loader-aseprite',
+                        'options': {
+                            'aseprite': '<path-to-aseprite>', // The path to the Aseprite executable.
+                            'prepare': {
+                                'sheet': 'packed', // The Aseprite output 'sheet type' option ('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical') ('rows' by default).
+                                'trim': true // The Aseprite output 'trim cels' option (false by default).
+                            },
+                            'processing': {
+                                'colorswap': [
+                                    {
+                                        'source': [255, 0, 255, 255], // A source color to swap from (in rgba).
+                                        'target': [0, 0, 0, 0] // A target color to swap to (in rgba).
+                                    }
+                                ]
+                            }
                         }
                     }
                 ]

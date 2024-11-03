@@ -4,14 +4,28 @@ const path = require('path');
 
 const webpack = require('webpack');
 
+const pngjs = require('pngjs').PNG.sync;
+
 /**
  * @type {webpack.RawLoaderDefinition}
  */
 module.exports = function loader() {
 
     /**
-     * @typedef {Object} typeoptions Options for the loader.
-     * @property {(string | undefined)} typeoptions.aseprite The path of the Aseprite executable.
+     * @typedef {Object} typecolorswap A swap of two colors.
+     * @property {Array<number>} typecolorswap.source The source color to swap from (in rgba).
+     * @property {Array<number>} typecolorswap.target The target color to swap to (in rgba).
+     * @private
+     */
+
+    /**
+     * @typedef {Object} typeoptions The options for the loader.
+     * @property {string} typeoptions.aseprite The path to the Aseprite executable.
+     * @property {Object} [typeoptions.prepare] The options for the Aseprite CLI.
+     * @property {('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [typeoptions.prepare.sheet] The output sheet type ('rows' by default).
+     * @property {boolean} [typeoptions.prepare.trim] The 'trim cels' option (false by default).
+     * @property {Object} [typeoptions.processing] The options for processing the output files.
+     * @property {Array<typecolorswap>} [typeoptions.processing.colorswap] The swaps of colors.
      * @private
      */
 
@@ -20,6 +34,8 @@ module.exports = function loader() {
     const file = context.resourcePath;
     const options = context.getOptions();
     const aseprite = options.aseprite;
+    const prepare = options.prepare;
+    const processing = options.processing;
 
     try {
 
@@ -43,8 +59,11 @@ module.exports = function loader() {
 
     const location = path.dirname(file);
     const filename = path.basename(file, '.aseprite');
-    const png = filename + '.png';
-    const json = filename + '.json';
+    const sourceTexture = filename + '.png';
+    const sourceData = filename + '.json';
+
+    const trim = (typeof prepare !== 'undefined' && prepare.trim === true) ? ' --trim' : '';
+    const sheetType = (typeof prepare !== 'undefined' && ['colums', 'horizontal', 'packed', 'rows', 'vertical'].indexOf(prepare.sheet) !== -1) ? prepare.sheet : 'rows';
 
     try {
 
@@ -54,21 +73,67 @@ module.exports = function loader() {
 
             ' && "' + aseprite  + '"' +
             ' --batch "' + file + '"' +
-            ' --sheet "' + png + '"' +
-            ' --sheet-type rows' +
+            trim +
+            ' --sheet "' + sourceTexture + '"' +
+            ' --sheet-type ' + sheetType +
             ' --split-tags' +
-            ' --data "' + json + '"' +
+            ' --data "' + sourceData + '"' +
             ' --list-tags' +
             ' --format json-array' +
             ' --filename-format {tag}#{tagframe001}@{title}.{extension}'
         );
 
+        if (typeof processing !== 'undefined'
+        && Array.isArray(processing.colorswap)
+        && processing.colorswap.length > 0) {
+
+            const bufferSource = fs.readFileSync(path.resolve(location, sourceTexture));
+            const image = pngjs.read(bufferSource);
+
+            const pixels = image.data;
+            const height = image.height;
+            const width = image.width;
+
+            processing.colorswap.forEach(({source, target}) => {
+
+                const [redSource, greenSource, blueSource, alphaSource] = source;
+                const [redTarget, greenTarget, blueTarget, alphaTarget] = target;
+
+                for (let y = 0; y < height; y += 1) {
+
+                    for (let x = 0; x < width; x += 1) {
+
+                        const index = (width * y + x) * 4;
+
+                        const indexRed = index;
+                        const indexGreen = index + 1;
+                        const indexBlue = index + 2;
+                        const indexAlpha = index + 3;
+
+                        if (pixels[indexRed] === redSource
+                        && pixels[indexGreen] === greenSource
+                        && pixels[indexBlue] === blueSource
+                        && pixels[indexAlpha] === alphaSource) {
+
+                            pixels[indexRed] = redTarget;
+                            pixels[indexGreen] = greenTarget;
+                            pixels[indexBlue] = blueTarget;
+                            pixels[indexAlpha] = alphaTarget;
+                        }
+                    }
+                }
+            });
+
+            const bufferTarget = pngjs.write(image);
+            fs.writeFileSync(path.resolve(location, sourceTexture), bufferTarget);
+        }
+
         return (
 
             'import {Aseprite} from \'@theatrejs/plugin-aseprite\';' +
 
-            'import texture from \'./' + png + '\';' +
-            'import data from \'./' + json + '\';' +
+            'import data from \'./' + sourceData + '\';' +
+            'import texture from \'./' + sourceTexture + '\';' +
 
             'export default new Aseprite(texture, data);'
         );

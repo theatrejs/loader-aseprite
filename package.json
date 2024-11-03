@@ -1,6 +1,14 @@
 {
     "author": "Alexandre Blondeau",
+    "dependencies": {
+
+        "pngjs": "7.0.0"
+    },
     "description": "⚙️ A Webpack Loader for Aseprite files.",
+    "devDependencies": {
+
+        "@types/pngjs": "6.0.5"
+    },
     "engines": {
 
         "node": "16.13.0",
