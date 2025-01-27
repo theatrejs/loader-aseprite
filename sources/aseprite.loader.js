@@ -42,9 +42,9 @@ module.exports = function loader() {
         require.resolve('@theatrejs/plugin-aseprite');
     }
 
-    catch (error) {
+    catch ($error) {
 
-        throw error;
+        throw $error;
     }
 
     if (typeof aseprite === 'undefined') {
@@ -139,9 +139,9 @@ module.exports = function loader() {
         );
     }
 
-    catch (error) {
+    catch ($error) {
 
-        throw error;
+        throw $error;
     }
 };
 
