@@ -12,24 +12,24 @@ const pngjs = require('pngjs').PNG.sync;
 module.exports = function loader() {
 
     /**
-     * @typedef {Object} typecolorswap A swap of two colors.
-     * @property {Array<number>} typecolorswap.source The source color to swap from (in rgba).
-     * @property {Array<number>} typecolorswap.target The target color to swap to (in rgba).
+     * @typedef {Object} TypeColorswap A swap of two colors.
+     * @property {Array<number>} TypeColorswap.source The source color to swap from (in rgba).
+     * @property {Array<number>} TypeColorswap.target The target color to swap to (in rgba).
      * @private
      */
 
     /**
-     * @typedef {Object} typeoptions The options for the loader.
-     * @property {string} typeoptions.aseprite The path to the Aseprite executable.
-     * @property {Object} [typeoptions.prepare] The options for the Aseprite CLI.
-     * @property {('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [typeoptions.prepare.sheet] The output sheet type ('rows' by default).
-     * @property {boolean} [typeoptions.prepare.trim] The 'trim cels' option (false by default).
-     * @property {Object} [typeoptions.processing] The options for processing the output files.
-     * @property {Array<typecolorswap>} [typeoptions.processing.colorswap] The swaps of colors.
+     * @typedef {Object} TypeOptions The options for the loader.
+     * @property {string} TypeOptions.aseprite The path to the Aseprite executable.
+     * @property {Object} [TypeOptions.prepare] The options for the Aseprite CLI.
+     * @property {('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [TypeOptions.prepare.sheet] The output sheet type ('rows' by default).
+     * @property {boolean} [TypeOptions.prepare.trim] The 'trim cels' option (false by default).
+     * @property {Object} [TypeOptions.processing] The options for processing the output files.
+     * @property {Array<TypeColorswap>} [TypeOptions.processing.colorswap] The swaps of colors.
      * @private
      */
 
-    const context = /** @type {webpack.LoaderContext<typeoptions>} */(this);
+    const context = /** @type {webpack.LoaderContext<TypeOptions>} */(this);
 
     const file = context.resourcePath;
     const options = context.getOptions();
