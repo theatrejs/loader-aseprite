@@ -67,65 +67,71 @@ module.exports = function loader() {
 
     try {
 
-        subprocess.execSync(
+        if (fs.existsSync(path.resolve(location, sourceTexture)) === false
+        || fs.existsSync(path.resolve(location, sourceData)) === false
+        || fs.statSync(path.resolve(location, sourceTexture)).mtime < fs.statSync(file).mtime
+        || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime) {
 
-            'cd "' + location + '"' +
+            subprocess.execSync(
 
-            ' && "' + aseprite  + '"' +
-            ' --batch "' + file + '"' +
-            trim +
-            ' --sheet "' + sourceTexture + '"' +
-            ' --sheet-type ' + sheetType +
-            ' --split-tags' +
-            ' --data "' + sourceData + '"' +
-            ' --list-tags' +
-            ' --format json-array' +
-            ' --filename-format {tag}#{tagframe001}@{title}.{extension}'
-        );
+                'cd "' + location + '"' +
 
-        if (typeof processing !== 'undefined'
-        && Array.isArray(processing.colorswap)
-        && processing.colorswap.length > 0) {
+                ' && "' + aseprite  + '"' +
+                ' --batch "' + file + '"' +
+                trim +
+                ' --sheet "' + sourceTexture + '"' +
+                ' --sheet-type ' + sheetType +
+                ' --split-tags' +
+                ' --data "' + sourceData + '"' +
+                ' --list-tags' +
+                ' --format json-array' +
+                ' --filename-format {tag}#{tagframe001}@{title}.{extension}'
+            );
 
-            const bufferSource = fs.readFileSync(path.resolve(location, sourceTexture));
-            const image = pngjs.read(bufferSource);
+            if (typeof processing !== 'undefined'
+            && Array.isArray(processing.colorswap)
+            && processing.colorswap.length > 0) {
 
-            const pixels = image.data;
-            const height = image.height;
-            const width = image.width;
+                const bufferSource = fs.readFileSync(path.resolve(location, sourceTexture));
+                const image = pngjs.read(bufferSource);
 
-            processing.colorswap.forEach(({source, target}) => {
+                const pixels = image.data;
+                const height = image.height;
+                const width = image.width;
 
-                const [redSource, greenSource, blueSource, alphaSource] = source;
-                const [redTarget, greenTarget, blueTarget, alphaTarget] = target;
+                processing.colorswap.forEach(({source, target}) => {
 
-                for (let y = 0; y < height; y += 1) {
+                    const [redSource, greenSource, blueSource, alphaSource] = source;
+                    const [redTarget, greenTarget, blueTarget, alphaTarget] = target;
 
-                    for (let x = 0; x < width; x += 1) {
+                    for (let y = 0; y < height; y += 1) {
 
-                        const index = (width * y + x) * 4;
+                        for (let x = 0; x < width; x += 1) {
 
-                        const indexRed = index;
-                        const indexGreen = index + 1;
-                        const indexBlue = index + 2;
-                        const indexAlpha = index + 3;
+                            const index = (width * y + x) * 4;
 
-                        if (pixels[indexRed] === redSource
-                        && pixels[indexGreen] === greenSource
-                        && pixels[indexBlue] === blueSource
-                        && pixels[indexAlpha] === alphaSource) {
+                            const indexRed = index;
+                            const indexGreen = index + 1;
+                            const indexBlue = index + 2;
+                            const indexAlpha = index + 3;
 
-                            pixels[indexRed] = redTarget;
-                            pixels[indexGreen] = greenTarget;
-                            pixels[indexBlue] = blueTarget;
-                            pixels[indexAlpha] = alphaTarget;
+                            if (pixels[indexRed] === redSource
+                            && pixels[indexGreen] === greenSource
+                            && pixels[indexBlue] === blueSource
+                            && pixels[indexAlpha] === alphaSource) {
+
+                                pixels[indexRed] = redTarget;
+                                pixels[indexGreen] = greenTarget;
+                                pixels[indexBlue] = blueTarget;
+                                pixels[indexAlpha] = alphaTarget;
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            const bufferTarget = pngjs.write(image);
-            fs.writeFileSync(path.resolve(location, sourceTexture), bufferTarget);
+                const bufferTarget = pngjs.write(image);
+                fs.writeFileSync(path.resolve(location, sourceTexture), bufferTarget);
+            }
         }
 
         return (
