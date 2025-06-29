@@ -47,30 +47,30 @@ module.exports = function loader() {
         throw $error;
     }
 
-    if (typeof aseprite === 'undefined') {
-
-        throw new Error('Aseprite executable path is missing in the loader options.');
-    }
-
-    if (fs.existsSync(aseprite) === false) {
-
-        throw new Error('Aseprite executable not found reading path: ' + (typeof aseprite !== 'undefined' || aseprite !== '' ? '\'' + aseprite + '\'' : '<empty>') + '.');
-    }
-
-    const location = path.dirname(file);
-    const filename = path.basename(file, '.aseprite');
-    const sourceTexture = filename + '.png';
-    const sourceData = filename + '.json';
-
-    const trim = (typeof prepare !== 'undefined' && prepare.trim === true) ? ' --trim' : '';
-    const sheetType = (typeof prepare !== 'undefined' && ['colums', 'horizontal', 'packed', 'rows', 'vertical'].indexOf(prepare.sheet) !== -1) ? prepare.sheet : 'rows';
-
     try {
+
+        const location = path.dirname(file);
+        const filename = path.basename(file, '.aseprite');
+        const sourceTexture = filename + '.png';
+        const sourceData = filename + '.json';
 
         if (fs.existsSync(path.resolve(location, sourceTexture)) === false
         || fs.existsSync(path.resolve(location, sourceData)) === false
         || fs.statSync(path.resolve(location, sourceTexture)).mtime < fs.statSync(file).mtime
         || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime) {
+
+            if (typeof aseprite === 'undefined') {
+
+                throw new Error('Aseprite executable path is missing in the loader options.');
+            }
+
+            if (fs.existsSync(aseprite) === false) {
+
+                throw new Error('Aseprite executable not found reading path: ' + (typeof aseprite !== 'undefined' || aseprite !== '' ? '\'' + aseprite + '\'' : '<empty>') + '.');
+            }
+
+            const trim = (typeof prepare !== 'undefined' && prepare.trim === true) ? ' --trim' : '';
+            const sheetType = (typeof prepare !== 'undefined' && ['colums', 'horizontal', 'packed', 'rows', 'vertical'].indexOf(prepare.sheet) !== -1) ? prepare.sheet : 'rows';
 
             subprocess.execSync(
 
