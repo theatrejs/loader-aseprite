@@ -85,7 +85,7 @@ module.exports = function loader() {
                 ' --data "' + sourceData + '"' +
                 ' --list-tags' +
                 ' --format json-array' +
-                ' --filename-format {tag}#{tagframe001}@{title}.{extension}'
+                ' --filename-format frame-{frame001}@{title}.{extension}'
             );
 
             if (typeof processing !== 'undefined'
