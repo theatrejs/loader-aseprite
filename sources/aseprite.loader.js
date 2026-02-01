@@ -29,6 +29,59 @@ module.exports = function loader() {
      * @private
      */
 
+    /**
+     * @typedef {Object} TypeAseprite An Aseprite JSON data.
+     * @property {Array<TypeAsepriteFrame>} TypeAseprite.frames The Aseprite JSON frames data.
+     * @property {TypeAsepriteMeta} TypeAseprite.meta The Aseprite JSON meta data.
+     * @private
+     */
+
+    /**
+     * @typedef {Object} TypeAsepriteFrame An Aseprite JSON frame data.
+     * @property {number} TypeAsepriteFrame.duration The duration.
+     * @property {string} TypeAsepriteFrame.filename The file name.
+     * @property {Object} TypeAsepriteFrame.frame The frame.
+     * @property {number} TypeAsepriteFrame.frame.x The x position of the frame.
+     * @property {number} TypeAsepriteFrame.frame.y The y position of the frame.
+     * @property {number} TypeAsepriteFrame.frame.w The width of the frame.
+     * @property {number} TypeAsepriteFrame.frame.h The height of the frame.
+     * @property {boolean} TypeAsepriteFrame.rotated The rotated status.
+     * @property {Object} TypeAsepriteFrame.spriteSourceSize The sprite source size.
+     * @property {number} TypeAsepriteFrame.spriteSourceSize.x The x position of the sprite source.
+     * @property {number} TypeAsepriteFrame.spriteSourceSize.y The y position of the sprite source.
+     * @property {number} TypeAsepriteFrame.spriteSourceSize.w The width of the sprite source.
+     * @property {number} TypeAsepriteFrame.spriteSourceSize.h The height of the sprite source.
+     * @property {Object} TypeAsepriteFrame.sourceSize The sprite size.
+     * @property {number} TypeAsepriteFrame.sourceSize.w The width of the source.
+     * @property {number} TypeAsepriteFrame.sourceSize.h The height of the source.
+     * @property {boolean} TypeAsepriteFrame.trimmed The trimmed status.
+     * @private
+     */
+
+    /**
+     * @typedef {Object} TypeAsepriteMeta An Aseprite JSON meta data.
+     * @property {string} TypeAsepriteMeta.app The app meta data.
+     * @property {string} TypeAsepriteMeta.format The format meta data.
+     * @property {string} TypeAsepriteMeta.image The image meta data.
+     * @property {string} TypeAsepriteMeta.scale The scale meta data.
+     * @property {Object} TypeAsepriteMeta.size The size meta data.
+     * @property {number} TypeAsepriteMeta.size.w The size width meta data.
+     * @property {number} TypeAsepriteMeta.size.h The size height meta data.
+     * @property {string} TypeAsepriteMeta.version The version meta data.
+     * @property {Array<TypeAsepriteFrameTag>} TypeAsepriteMeta.frameTags The Aseprite JSON tags meta data.
+     * @private
+     */
+
+    /**
+     * @typedef {Object} TypeAsepriteFrameTag An Aseprite JSON tag meta data.
+     * @property {string} TypeAsepriteFrameTag.name The name.
+     * @property {number} TypeAsepriteFrameTag.from The first frame.
+     * @property {number} TypeAsepriteFrameTag.to The last frame.
+     * @property {string} TypeAsepriteFrameTag.direction The animation direction.
+     * @property {string} TypeAsepriteFrameTag.color The color.
+     * @private
+     */
+
     const context = /** @type {webpack.LoaderContext<TypeOptions>} */(this);
 
     const file = context.resourcePath;
@@ -53,11 +106,14 @@ module.exports = function loader() {
         const filename = path.basename(file, '.aseprite');
         const sourceTexture = filename + '.png';
         const sourceData = filename + '.json';
+        const sourceAnimations = filename + '.animations.js';
 
         if (fs.existsSync(path.resolve(location, sourceTexture)) === false
         || fs.existsSync(path.resolve(location, sourceData)) === false
+        || fs.existsSync(path.resolve(location, sourceAnimations)) === false
         || fs.statSync(path.resolve(location, sourceTexture)).mtime < fs.statSync(file).mtime
-        || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime) {
+        || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime
+        || fs.statSync(path.resolve(location, sourceAnimations)).mtime < fs.statSync(file).mtime) {
 
             if (typeof aseprite === 'undefined') {
 
@@ -132,6 +188,43 @@ module.exports = function loader() {
                 const bufferTarget = pngjs.write(image);
                 fs.writeFileSync(path.resolve(location, sourceTexture), bufferTarget);
             }
+
+            const json = /** @type {TypeAseprite} */(JSON.parse(fs.readFileSync(path.resolve(location, sourceData), 'utf-8')));
+            const tags = json.meta.frameTags
+            .map(($tag) => ($tag.name))
+            .sort();
+
+            const content = tags.length > 0
+            ? (
+                '/**\n' +
+                ' * @typedef {(' + tags.map(($tag) => ($tag.toUpperCase().replace(/-/g, '_'))).join(' | ') + ')} TypeAnimation An animation.\n' +
+                ' */\n' +
+                '\n' +
+                tags.map(($tag) => (
+
+                    '/**\n' +
+                    ' * The \'' + $tag.toUpperCase().replace(/-/g, '_') + '\' animation.\n' +
+                    ' * @type {\'' + $tag + '\'}\n' +
+                    ' * @constant\n' +
+                    ' */\n' +
+                    'const ' + $tag.toUpperCase().replace(/-/g, '_') + ' = \'' + $tag + '\';\n'
+
+                )).join('\n') + '\n' +
+                'export {\n' +
+                '\n' +
+                tags.map(($tag) => (
+
+                    '    ' + $tag.toUpperCase().replace(/-/g, '_'))
+
+                ).join(',' + '\n') + '\n' +
+                '};\n'
+            )
+            : (
+
+                'export {};\n'
+            );
+
+            fs.writeFileSync(path.resolve(location, sourceAnimations), content, 'utf-8');
         }
 
         return (

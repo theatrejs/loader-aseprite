@@ -82,17 +82,18 @@ npm install @theatrejs/loader-aseprite --save-dev
 
 ```javascript
 import {Stage} from '@theatrejs/theatrejs';
-import * as PLUGINASEPRITE from '@theatrejs/plugin-aseprite';
+import * as PLUGIN_ASEPRITE from '@theatrejs/plugin-aseprite';
 
+import * as ANIMATIONS_HERO from './hero-16x16.animations.js';
 import asepriteHero from './hero-16x16.aseprite';
 
 class Level1 extends Stage {
     onCreate() {
         this.createActor(
-            PLUGINASEPRITE.FACTORIES.ActorWithSpritesheet({
+            PLUGIN_ASEPRITE.FACTORIES.ActorWithSpritesheet({
                 $aseprite: asepriteHero,
                 $loop: true,
-                $tag: 'idle'
+                $tag: ANIMATIONS_HERO.IDLE
             })
         );
     }
@@ -103,17 +104,18 @@ class Level1 extends Stage {
 
 ```javascript
 import {FACTORIES} from '@theatrejs/theatrejs';
-import * as PLUGINASEPRITE from '@theatrejs/plugin-aseprite';
+import * as PLUGIN_ASEPRITE from '@theatrejs/plugin-aseprite';
 
+import * as ANIMATIONS_HERO from './hero-16x16.animations.js';
 import asepriteHero from './hero-16x16.aseprite';
 
-class Level1 extends FACTORIES.StageWithPreloadables([PLUGINASEPRITE.FACTORIES.PreloadableAseprite(asepriteHero)]) {
+class Level1 extends FACTORIES.StageWithPreloadables([PLUGIN_ASEPRITE.FACTORIES.PreloadableAseprite(asepriteHero)]) {
     onCreate() {
         this.createActor(
-            PLUGINASEPRITE.FACTORIES.ActorWithSpritesheet({
+            PLUGIN_ASEPRITE.FACTORIES.ActorWithSpritesheet({
                 $aseprite: asepriteHero,
                 $loop: true,
-                $tag: 'idle'
+                $tag: ANIMATIONS_HERO.IDLE
             })
         );
     }
