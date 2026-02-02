@@ -21,6 +21,7 @@ module.exports = function loader() {
     /**
      * @typedef {Object} TypeOptions The options for the loader.
      * @property {string} TypeOptions.aseprite The path to the Aseprite executable.
+     * @property {boolean} [TypeOptions.constants] The option for generating the constants files with all the Aseprite animation tags.
      * @property {Object} [TypeOptions.prepare] The options for the Aseprite CLI.
      * @property {('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [TypeOptions.prepare.sheet] The output sheet type ('rows' by default).
      * @property {boolean} [TypeOptions.prepare.trim] The 'trim cels' option (false by default).
@@ -87,6 +88,7 @@ module.exports = function loader() {
     const file = context.resourcePath;
     const options = context.getOptions();
     const aseprite = options.aseprite;
+    const constants = options.constants;
     const prepare = options.prepare;
     const processing = options.processing;
 
@@ -110,10 +112,8 @@ module.exports = function loader() {
 
         if (fs.existsSync(path.resolve(location, sourceTexture)) === false
         || fs.existsSync(path.resolve(location, sourceData)) === false
-        || fs.existsSync(path.resolve(location, sourceAnimations)) === false
         || fs.statSync(path.resolve(location, sourceTexture)).mtime < fs.statSync(file).mtime
-        || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime
-        || fs.statSync(path.resolve(location, sourceAnimations)).mtime < fs.statSync(file).mtime) {
+        || fs.statSync(path.resolve(location, sourceData)).mtime < fs.statSync(file).mtime) {
 
             if (typeof aseprite === 'undefined') {
 
@@ -188,43 +188,50 @@ module.exports = function loader() {
                 const bufferTarget = pngjs.write(image);
                 fs.writeFileSync(path.resolve(location, sourceTexture), bufferTarget);
             }
+        }
 
-            const json = /** @type {TypeAseprite} */(JSON.parse(fs.readFileSync(path.resolve(location, sourceData), 'utf-8')));
-            const tags = json.meta.frameTags
-            .map(($tag) => ($tag.name))
-            .sort();
+        if (fs.existsSync(path.resolve(location, sourceAnimations)) === false
+        || fs.statSync(path.resolve(location, sourceAnimations)).mtime < fs.statSync(file).mtime) {
 
-            const content = tags.length > 0
-            ? (
-                '/**\n' +
-                ' * @typedef {(' + tags.map(($tag) => ($tag.toUpperCase().replace(/-/g, '_'))).join(' | ') + ')} TypeAnimation An animation.\n' +
-                ' */\n' +
-                '\n' +
-                tags.map(($tag) => (
+            if (constants === true) {
 
+                const json = /** @type {TypeAseprite} */(JSON.parse(fs.readFileSync(path.resolve(location, sourceData), 'utf-8')));
+                const tags = json.meta.frameTags
+                .map(($tag) => ($tag.name))
+                .sort();
+
+                const content = tags.length > 0
+                ? (
                     '/**\n' +
-                    ' * The \'' + $tag.toUpperCase().replace(/-/g, '_') + '\' animation.\n' +
-                    ' * @type {\'' + $tag + '\'}\n' +
-                    ' * @constant\n' +
+                    ' * @typedef {(' + tags.map(($tag) => ($tag.toUpperCase().replace(/-/g, '_'))).join(' | ') + ')} TypeAnimation An animation.\n' +
                     ' */\n' +
-                    'const ' + $tag.toUpperCase().replace(/-/g, '_') + ' = \'' + $tag + '\';\n'
+                    '\n' +
+                    tags.map(($tag) => (
 
-                )).join('\n') + '\n' +
-                'export {\n' +
-                '\n' +
-                tags.map(($tag) => (
+                        '/**\n' +
+                        ' * The \'' + $tag.toUpperCase().replace(/-/g, '_') + '\' animation.\n' +
+                        ' * @type {\'' + $tag + '\'}\n' +
+                        ' * @constant\n' +
+                        ' */\n' +
+                        'const ' + $tag.toUpperCase().replace(/-/g, '_') + ' = \'' + $tag + '\';\n'
 
-                    '    ' + $tag.toUpperCase().replace(/-/g, '_'))
+                    )).join('\n') + '\n' +
+                    'export {\n' +
+                    '\n' +
+                    tags.map(($tag) => (
 
-                ).join(',' + '\n') + '\n' +
-                '};\n'
-            )
-            : (
+                        '    ' + $tag.toUpperCase().replace(/-/g, '_'))
 
-                'export {};\n'
-            );
+                    ).join(',' + '\n') + '\n' +
+                    '};\n'
+                )
+                : (
 
-            fs.writeFileSync(path.resolve(location, sourceAnimations), content, 'utf-8');
+                    'export {};\n'
+                );
+
+                fs.writeFileSync(path.resolve(location, sourceAnimations), content, 'utf-8');
+            }
         }
 
         return (
