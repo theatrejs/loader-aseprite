@@ -23,7 +23,7 @@ module.exports = function loader() {
      * @property {string} TypeOptions.aseprite The path to the Aseprite executable.
      * @property {boolean} [TypeOptions.constants] The option for generating the constants files with all the Aseprite animation tags.
      * @property {Object} [TypeOptions.prepare] The options for the Aseprite CLI.
-     * @property {('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [TypeOptions.prepare.sheet] The output sheet type ('rows' by default).
+     * @property {('columns' | 'horizontal' | 'packed' | 'rows' | 'vertical')} [TypeOptions.prepare.sheet] The output sheet type ('rows' by default).
      * @property {boolean} [TypeOptions.prepare.trim] The 'trim cels' option (false by default).
      * @property {Object} [TypeOptions.processing] The options for processing the output files.
      * @property {Array<TypeColorswap>} [TypeOptions.processing.colorswap] The swaps of colors.
@@ -126,7 +126,7 @@ module.exports = function loader() {
             }
 
             const trim = (typeof prepare !== 'undefined' && prepare.trim === true) ? ' --trim' : '';
-            const sheetType = (typeof prepare !== 'undefined' && ['colums', 'horizontal', 'packed', 'rows', 'vertical'].indexOf(prepare.sheet) !== -1) ? prepare.sheet : 'rows';
+            const sheetType = (typeof prepare !== 'undefined' && ['columns', 'horizontal', 'packed', 'rows', 'vertical'].indexOf(prepare.sheet) !== -1) ? prepare.sheet : 'rows';
 
             subprocess.execSync(
 

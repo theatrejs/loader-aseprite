@@ -56,7 +56,7 @@ npm install @theatrejs/loader-aseprite --save-dev
                             'aseprite': '<path-to-aseprite>', // The path to the Aseprite executable.
                             'constants': true, // The option for generating the constants files with all the Aseprite animation tags.
                             'prepare': {
-                                'sheet': 'packed', // The Aseprite output 'sheet type' option ('colums' | 'horizontal' | 'packed' | 'rows' | 'vertical') ('rows' by default).
+                                'sheet': 'packed', // The Aseprite output 'sheet type' option ('columns' | 'horizontal' | 'packed' | 'rows' | 'vertical') ('rows' by default).
                                 'trim': true // The Aseprite output 'trim cels' option (false by default).
                             },
                             'processing': {
